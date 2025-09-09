@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react";
 
+const isDev = () => import.meta.env.VITE_APP_DEV === "true";
+const devApi = () => import.meta.env.VITE_APP_DEV_API;
+const proApi = () => import.meta.env.VITE_APP_PRO_API;
+
 const StockDashboard = () => {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,10 +14,12 @@ const StockDashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        const response = await fetch(
-          "https://globes-server.onrender.com/api/stocks"
-        );
+        let response;
+        if (isDev()) {
+          response = await fetch(devApi());
+        } else {
+          response = await fetch(proApi());
+        }
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -22,20 +28,10 @@ const StockDashboard = () => {
         const data = await response.json();
         setStocks(data);
         setLoading(false);
-
-        // Fallback to mock data if API fails (comment out when API is working)
-        // setTimeout(() => {
-        //   setStocks(mockData);
-        //   setLoading(false);
-        // }, 1000);
       } catch (err) {
         console.error("API Error:", err);
         setError(`Failed to fetch stock data: ${err.message}`);
         setLoading(false);
-
-        // Optional: Use mock data as fallback when API fails
-        // setStocks(mockData);
-        // setError(null);
       }
     };
 

@@ -57,9 +57,11 @@ const StockDashboard = () => {
   };
 
   const calculateTotalProfit = () => {
-    return stocks.reduce((total, stock) => {
-      return total + parseFloat(stock.profit);
-    }, 0);
+    const profit =
+      stocks.reduce((total, stock) => {
+        return total + parseFloat(stock.profit);
+      }, 0) - 309;
+    return profit;
   };
 
   const calculateTotalValue = () => {
@@ -109,13 +111,14 @@ const StockDashboard = () => {
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">סך הכל רווח/הפסד</p>
+                <p className="text-gray-500 text-sm">רווח/הפסד</p>
                 <p
                   className={`text-2xl font-bold ${
                     totalProfit >= 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  ₪{totalProfit.toFixed(2)}
+                  <span dir="ltr">{totalProfit.toLocaleString()}</span>
+                  <span> ₪</span>
                 </p>
               </div>
               <div
@@ -137,7 +140,7 @@ const StockDashboard = () => {
               <div>
                 <p className="text-gray-500 text-sm">סך הכל שווי</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  ₪{totalValue.toFixed(2)}
+                  ₪{totalValue.toLocaleString()}
                 </p>
               </div>
               <div className="p-3 rounded-full bg-blue-100">
@@ -178,7 +181,9 @@ const StockDashboard = () => {
                   )}`}
                 >
                   {getChangeIcon(stock.change)}
-                  <span className="font-medium">{stock.change}</span>
+                  <span dir="ltr" className="font-medium">
+                    {stock.change}
+                  </span>
                 </div>
               </div>
 
@@ -186,14 +191,14 @@ const StockDashboard = () => {
                 <div>
                   <p className="text-gray-500 text-sm">מחיר אחרון</p>
                   <p className="text-lg font-semibold text-gray-800">
-                    ₪{formatNumber(stock.last)}
+                    {formatNumber(stock.last)}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-gray-500 text-sm">שווי</p>
                   <p className="text-lg font-semibold text-blue-600">
-                    ₪{stock.value}
+                    ₪{stock.value.toLocaleString()}
                   </p>
                 </div>
 
@@ -206,19 +211,21 @@ const StockDashboard = () => {
                         : "text-red-600"
                     }`}
                   >
-                    ₪{stock.profit}
+                    <span dir="ltr">{stock.profit.toLocaleString()}</span>
+                    <span> ₪</span>
                   </p>
                 </div>
 
                 <div>
                   <p className="text-gray-500 text-sm">תשואה</p>
-                  <p
-                    className={`text-lg font-semibold ${getChangeColor(
+                  <span
+                    dir="ltr"
+                    className={`text-lg font-semibold align-right ${getChangeColor(
                       stock.yield
                     )}`}
                   >
                     {stock.yield}
-                  </p>
+                  </span>
                 </div>
               </div>
             </div>

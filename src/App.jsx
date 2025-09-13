@@ -57,17 +57,14 @@ const StockDashboard = () => {
   };
 
   const calculateTotalProfit = () => {
-    const profit =
-      stocks.reduce((total, stock) => {
-        return total + parseFloat(stock.profit);
-      }, 0) - 309;
+    const profit = stocks.reduce((total, stock) => {
+      return total + parseFloat(stock.profit);
+    }, 0);
     return profit;
   };
 
-  const calculateTotalValue = () => {
-    return stocks.reduce((total, stock) => {
-      return total + parseFloat(stock.value);
-    }, 0);
+  const calculateTotalValue = (totalProfit) => {
+    return totalProfit + 100000 - 308.95;
   };
 
   if (loading) {
@@ -92,7 +89,8 @@ const StockDashboard = () => {
   }
 
   const totalProfit = calculateTotalProfit();
-  const totalValue = calculateTotalValue();
+  const totalValue = calculateTotalValue(totalProfit);
+  const precentChange = (totalProfit / totalValue) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -151,14 +149,20 @@ const StockDashboard = () => {
 
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">מספר מניות</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {stocks.length}
+              <div dir="ltr">
+                <p className="text-gray-500 text-sm">רווח באחוזים</p>
+                <p
+                  className={`text-2xl font-bold ${
+                    precentChange >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {precentChange.toFixed(2)}%
                 </p>
               </div>
               <div className="p-3 rounded-full bg-purple-100">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+                <span className="text-purple-600">
+                  {getChangeIcon(`${precentChange.toFixed(2)}%`)}
+                </span>
               </div>
             </div>
           </div>

@@ -1,42 +1,54 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react";
 
 const isDev = () => import.meta.env.VITE_APP_DEV === "true";
 const devApi = () => import.meta.env.VITE_APP_DEV_API;
 const proApi = () => import.meta.env.VITE_APP_PRO_API;
 
+const portfolios = ["760697", "760306"];
+
 const StockDashboard = () => {
+  const [portfolio, setPortfolio] = useState(portfolios[0]);
   const [stocks, setStocks] = useState([]);
+  const [totalProfit, setTotalProfit] = useState(0);
+  const [totalValue, setTotalValue] = useState(0);
+  const [precentChange, setPrecentChange] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        let response;
-        if (isDev()) {
-          response = await fetch(devApi());
-        } else {
-          response = await fetch(proApi());
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setStocks(data);
-        setLoading(false);
-      } catch (err) {
-        console.error("API Error:", err);
-        setError(`Failed to fetch stock data: ${err.message}`);
-        setLoading(false);
+  // Reusable fetch function
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      let response;
+      if (isDev()) {
+        response = await fetch(`${devApi()}?portfolio=${portfolio}`);
+      } else {
+        response = await fetch(`${proApi()}?portfolio=${portfolio}`);
       }
-    };
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const { data, totalProfit, totalValue, precentChange } =
+        await response.json();
+      setStocks(data);
+      setTotalProfit(totalProfit);
+      setTotalValue(totalValue);
+      setPrecentChange(precentChange);
+      setLoading(false);
+    } catch (err) {
+      console.error("API Error:", err);
+      setError(`Failed to fetch stock data: ${err.message}`);
+      setLoading(false);
+    }
+  }, [portfolio]);
+
+  // Run on first load and whenever portfolio changes
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [portfolio, fetchData]);
 
   const formatNumber = (value) => {
     return parseFloat(value.replace(/,/g, "")).toLocaleString();
@@ -54,17 +66,6 @@ const StockDashboard = () => {
     if (numChange > 0) return <TrendingUp className="w-4 h-4" />;
     if (numChange < 0) return <TrendingDown className="w-4 h-4" />;
     return <Activity className="w-4 h-4" />;
-  };
-
-  const calculateTotalProfit = () => {
-    const profit = stocks.reduce((total, stock) => {
-      return total + parseFloat(stock.profit);
-    }, 0);
-    return profit;
-  };
-
-  const calculateTotalValue = (totalProfit) => {
-    return totalProfit + 100000 - 308.95;
   };
 
   if (loading) {
@@ -88,20 +89,56 @@ const StockDashboard = () => {
     );
   }
 
-  const totalProfit = calculateTotalProfit();
-  const totalValue = calculateTotalValue(totalProfit);
-  const precentChange = (totalProfit / totalValue) * 100;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2 text-center">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">
             דשבורד תיק השקעות
           </h1>
-          <p className="text-gray-600 text-center">
-            עדכון נתוני מניות בזמן אמת
+          <p className="text-gray-600">עדכון נתוני מניות בזמן אמת</p>
+        </div>
+
+        {/* Portfolio Selector */}
+        <div className="mb-8">
+          <p className="text-center text-gray-600 mb-3 font-medium">
+            בחר תיק השקעות
           </p>
+          <div className="flex justify-center space-x-4 space-x-reverse">
+            {portfolios.map((p) => (
+              <div
+                key={p}
+                onClick={() => setPortfolio(p)}
+                className={`cursor-pointer rounded-xl p-4 shadow-lg transition-all duration-300 w-40 text-center border-2 ${
+                  portfolio === p
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white transform scale-105 border-indigo-500"
+                    : "bg-white text-gray-700 hover:bg-indigo-50 hover:shadow-xl border-gray-200"
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`rounded-full p-2 mb-2 ${
+                      portfolio === p
+                        ? "bg-white bg-opacity-20"
+                        : "bg-indigo-100 text-indigo-600"
+                    }`}
+                  >
+                    {p === "760306" ? (
+                      <Activity className="h-5 w-5" /> // Demo portfolio icon
+                    ) : (
+                      <DollarSign className="h-5 w-5" /> // Real portfolio icon
+                    )}
+                  </div>
+                  <span className="font-medium">
+                    {p === "760306" ? "דמו" : "אמיתי"}
+                  </span>
+                  <span className="text-xs opacity-80 mt-1">
+                    פורטפוליו: {p}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -236,9 +273,10 @@ const StockDashboard = () => {
           ))}
         </div>
 
+        {/* Refresh Button */}
         <div className="mt-8 text-center">
           <button
-            onClick={() => window.location.reload()}
+            onClick={fetchData}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
             רענן נתונים

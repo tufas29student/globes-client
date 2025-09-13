@@ -140,7 +140,9 @@ const StockDashboard = () => {
             ))}
           </div>
         </div>
-
+        <div className="text-center text-gray-600 mb-3 font-bold">
+          נפתח בתאריך {portfolio === "760306" ? "05/09/2025" : "12/09/2025"}
+        </div>
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">

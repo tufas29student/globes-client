@@ -218,7 +218,7 @@ const StockDashboard = () => {
           {/* New Daily Percentage Change Card */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
-              <div dir="ltr">
+              <div>
                 <p className="text-gray-500 text-sm">רווח באחוזים יומי</p>
                 <p
                   className={`text-2xl font-bold ${

@@ -1,5 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Activity,
+  Calendar,
+} from "lucide-react";
 
 const isDev = () => import.meta.env.VITE_APP_DEV === "true";
 const devApi = () => import.meta.env.VITE_APP_DEV_API;
@@ -13,6 +19,7 @@ const StockDashboard = () => {
   const [totalProfit, setTotalProfit] = useState(0);
   const [totalValue, setTotalValue] = useState(0);
   const [precentChange, setPrecentChange] = useState(0);
+  const [dailyChange, setDailyChange] = useState(0); // Added daily change state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -31,12 +38,13 @@ const StockDashboard = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const { data, totalProfit, totalValue, precentChange } =
+      const { data, totalProfit, totalValue, precentChange, dailyChange } =
         await response.json();
       setStocks(data);
       setTotalProfit(totalProfit);
       setTotalValue(totalValue);
       setPrecentChange(precentChange);
+      setDailyChange(dailyChange);
       setLoading(false);
     } catch (err) {
       console.error("API Error:", err);
@@ -143,8 +151,9 @@ const StockDashboard = () => {
         <div className="text-center text-gray-600 mb-3 font-bold">
           נפתח בתאריך {portfolio === "760306" ? "05/09/2025" : "12/09/2025"}
         </div>
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+        {/* Summary Cards - Updated to 4 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -202,6 +211,29 @@ const StockDashboard = () => {
                 <span className="text-purple-600">
                   {getChangeIcon(`${precentChange.toFixed(2)}%`)}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* New Daily Percentage Change Card */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div dir="ltr">
+                <p className="text-gray-500 text-sm">רווח באחוזים יומי</p>
+                <p
+                  className={`text-2xl font-bold ${
+                    dailyChange >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {dailyChange.toFixed(2)}%
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-orange-100">
+                <Calendar
+                  className={`w-6 h-6 ${
+                    dailyChange >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                />
               </div>
             </div>
           </div>
